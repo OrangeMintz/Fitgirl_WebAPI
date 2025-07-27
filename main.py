@@ -23,5 +23,8 @@ def upcoming_release():
     print(json_result)
     return json_result
 
+def new_release():
+    entry_title = soup.find_all('h1', class_='entry-title').text
+    
 
 upcoming_release()
