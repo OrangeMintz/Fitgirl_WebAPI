@@ -1,5 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
+import json
+
 
 html_content = requests.get('https://fitgirl-repacks.site').text
 soup = BeautifulSoup(html_content,'html.parser')
@@ -20,22 +22,31 @@ def upcoming_release():
                        "upcoming_releases": result
                        }
         
-    print(json_result)
+    # print(json_result)
+    print(json.dumps(json_result, indent=2, ensure_ascii=False))
+
     return json_result
 
 def new_release():
-    entry_header = soup.find_all('header', class_='entry-header')
+    
+    articles = soup.find_all('article', class_=['post', 'type-post'])
     
     results = []
     
-    for header in entry_header:
+    for article in articles: 
+        header = article.find('header', class_='entry-header')
+        if not header:
+            continue
+        
         title_tag = header.find('h1', class_='entry-title')
         if not title_tag:
             continue
         
         title_text = title_tag.get_text(strip=True)
-        
         if 'Upcoming Repacks' in title_text:
+            continue
+        
+        if 'Updates Digest' in title_text:
             continue
         
         a_tag = title_tag.find('a', href=True)
@@ -44,17 +55,41 @@ def new_release():
         time_tag = header.find('time', class_='entry-date')
         date = time_tag['datetime'] if time_tag else None
         
+        content = article.find('div', class_='entry-content')
+        if not content:
+            continue
+        
+        p_tag = content.find('p')
+        if not p_tag:
+            continue
+        
+        img = p_tag.find('img')
+        image_url = img['src'] if img else None
+        
+        strong = p_tag.find_all('strong')
+        company = strong[0].get_text(strip=True) if len(strong) > 0 else None
+        languages = strong[1].get_text(strip=True) if len(strong) > 1 else None
+        original_size = strong[2].get_text(strip=True) if len(strong) > 2 else None
+        repack_size = strong[3].get_text(strip=True) if len(strong) > 3 else None
+        
         results.append({
             'title': title_text,
             'link': link,
+            'image_url': image_url,
+            'company': company,
+            'languages': languages,
+            'original_size': original_size,
+            'repack_size': repack_size,
             'date': date
         })
         
-    json_result ={
-        "status":"success",
-        "new_releases": results
+    json_result = {
+        'status': 'success',
+        'new_releases': results 
     }
-    print(json_result)
+        
+    print(json.dumps(json_result, indent=2, ensure_ascii=False))
+    return json_result
     
-upcoming_release()
+# upcoming_release()
 new_release()
