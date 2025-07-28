@@ -24,16 +24,31 @@ def upcoming_release():
     return json_result
 
 def new_release():
-    entry_title = soup.find_all('h1', class_='entry-title')
+    entry_header = soup.find_all('header', class_='entry-header')
     
     results = []
     
-    for newRelease in entry_title:
-        title_text = newRelease.get_text(strip=True)
-        a_tag = newRelease.find('a', href=True)
-        link = a_tag['href']
-        results.append({'title': title_text, 
-                        'link': link})
+    for header in entry_header:
+        title_tag = header.find('h1', class_='entry-title')
+        if not title_tag:
+            continue
+        
+        title_text = title_tag.get_text(strip=True)
+        
+        if 'Upcoming Repacks' in title_text:
+            continue
+        
+        a_tag = title_tag.find('a', href=True)
+        link = a_tag['href'] if a_tag else None
+        
+        time_tag = header.find('time', class_='entry-date')
+        date = time_tag['datetime'] if time_tag else None
+        
+        results.append({
+            'title': title_text,
+            'link': link,
+            'date': date
+        })
         
     json_result ={
         "status":"success",
@@ -41,5 +56,5 @@ def new_release():
     }
     print(json_result)
     
-# upcoming_release()
+upcoming_release()
 new_release()
