@@ -24,7 +24,22 @@ def upcoming_release():
     return json_result
 
 def new_release():
-    entry_title = soup.find_all('h1', class_='entry-title').text
+    entry_title = soup.find_all('h1', class_='entry-title')
     
-
-upcoming_release()
+    results = []
+    
+    for newRelease in entry_title:
+        title_text = newRelease.get_text(strip=True)
+        a_tag = newRelease.find('a', href=True)
+        link = a_tag['href']
+        results.append({'title': title_text, 
+                        'link': link})
+        
+    json_result ={
+        "status":"success",
+        "new_releases": results
+    }
+    print(json_result)
+    
+# upcoming_release()
+new_release()
