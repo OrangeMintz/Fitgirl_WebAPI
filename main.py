@@ -64,8 +64,8 @@ def new_release():
             continue
         
         img = p_tag.find('img')
-        image_url = img['src'] if img else None
-        
+        image_url = img['src'].strip() if img and img.has_attr('src') else None
+
         strong = p_tag.find_all('strong')
         company = strong[0].get_text(strip=True) if len(strong) > 0 else None
         languages = strong[1].get_text(strip=True) if len(strong) > 1 else None
